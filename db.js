@@ -20,21 +20,30 @@ const userSchema = new mongoose.Schema({
     reps: Number
 })
 
-const User = mongoose.model("User", userSchema);
+const User = mongoose.model("User", userSchema, "users");
 
 async function createUser(uid, amount) {
     newUser = new User({id: uid, reps: amount});
     await newUser.save();
 }
 
-async function doesUserExists(uid) {
-    var usr = await User.findOne({id: uid});
-    return usr;
-    
+async function doesUserExist(uid) {
+    return await User.findOne({id: uid});
 }
 
-async function main() {
-    console.log(await doesUserExists(1234));
+async function updateUser(uid, amount) {
+    if (await doesUserExist(uid) == null) {
+        console.log("User doesn't exist!");
+        return;
+    }
+
+    await User.updateOne({id: uid}, {$inc : {'reps': amount}})
+
+    console.log("Success")
 }
 
-main();
+module.exports = {
+    createUser,
+    updateUser,
+    doesUserExist
+}
