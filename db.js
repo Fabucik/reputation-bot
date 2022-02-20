@@ -16,34 +16,64 @@ mongoose.connection.on("open", () => {
 /////////////////////////////////////////////////////////
 
 const userSchema = new mongoose.Schema({
-    id: Number,
-    reps: Number
+    id: String,
+    reps: Number,
+    repTime: String
 })
 
 const User = mongoose.model("User", userSchema, "users");
 
-async function createUser(uid, amount) {
-    newUser = new User({id: uid, reps: amount});
+async function createUser(uid, amount, time) {
+    newUser = new User({id: uid, reps: amount, repTime: time});
     await newUser.save();
 }
 
-async function doesUserExist(uid) {
+async function getUser(uid) {
     return await User.findOne({id: uid});
 }
 
-async function updateUser(uid, amount) {
-    if (await doesUserExist(uid) == null) {
+async function updateUserReps(uid, amount) {
+    if (await getUser(uid) == null) {
         console.log("User doesn't exist!");
         return;
     }
 
-    await User.updateOne({id: uid}, {$inc : {'reps': amount}})
+    await User.updateOne({id: uid}, {$inc : {'reps': amount}});
 
-    console.log("Success")
+    console.log("Success");
+}
+
+async function updateUserTime(uid, time) {
+    if (await getUser(uid) == null) {
+        console.log("User Doesn't exist!");
+        return;
+    }
+
+    await User.updateOne({id: uid}, {repTime: JSOn.stringify(time)});
+}
+
+/////////////////////////////////////////////////////////
+
+const botSchema = new mongoose.Schema({
+    id: String,
+    prefix: String
+})
+
+const RepBot = mongoose.model("RepBot", botSchema, "repbot");
+
+async function updatePrefix(bid, bprefix) {
+    await RepBot.updateOne({id: bid}, {prefix: bprefix});
+}
+
+async function getPrefix(bid) {
+    return await RepBot.findOne({id: bid}).then(result => result.prefix);
 }
 
 module.exports = {
     createUser,
-    updateUser,
-    doesUserExist
+    updateUserReps,
+    getUser,
+    updatePrefix,
+    getPrefix,
+    updateUserTime
 }
